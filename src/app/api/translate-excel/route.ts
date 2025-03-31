@@ -6,6 +6,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+interface ExcelRow {
+  [key: string]: string | number | boolean | null
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
@@ -23,8 +27,7 @@ export async function POST(req: Request) {
     const buffer = await file.arrayBuffer()
     const workbook = XLSX.read(buffer)
     const worksheet = workbook.Sheets[workbook.SheetNames[0]]
-    // Use header: -1 to treat all rows as data, including the first row
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
 
     // Get language name for the prompt
     const languageMap: { [key: string]: string } = {
@@ -44,7 +47,7 @@ export async function POST(req: Request) {
 
     // Translate each row, including the first row
     const translatedData = await Promise.all(
-      data.map(async (row: any) => {
+      data.map(async (row: string[]) => {
         const textToTranslate = row[0] // Get first column value
         if (!textToTranslate) return ['', ''] // Handle empty rows
 

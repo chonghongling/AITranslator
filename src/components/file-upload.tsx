@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { BatchTranslationDialog } from "@/components/batch-translation-dialog"
 import { Upload } from "lucide-react"
 

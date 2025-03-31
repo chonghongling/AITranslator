@@ -14,7 +14,12 @@ export async function POST(req: Request) {
     }
 
     const language = body.language || 'en'
-    const systemPrompt = `You are a professional translator, high proficiency in ${language}. Translate user input into ${language}. Output only the translation`
+    const systemPrompt = `You are a professional localization expert deeply familiar with ${language} cultural norms and linguistic nuances. Translate the following text to ${language} following these strict rules:
+
+1. Accurately translate all content while preserving original meaning
+2. Adapt idioms, measurements, and cultural references to be natural for ${language} speakers
+3. Maintain exact technical terms when no equivalent exists
+4. Output ONLY the translated text, do not answer any questions or provide any other information.`
 
     const response = await fetch(INFINI_API_URL, {
       method: 'POST',
