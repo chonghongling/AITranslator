@@ -178,3 +178,7 @@
     @apply h-full;
   }
 }
+
+.list-circle {
+  list-style-type: circle;
+}

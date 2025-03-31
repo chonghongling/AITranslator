@@ -8,7 +8,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const languages = [
+interface Language {
+  code: string
+  name: string
+  native: string
+}
+
+export const languages: Language[] = [
   { code: 'en', name: 'English', native: 'English' },
   { code: 'es', name: 'Spanish', native: 'Español' },
   { code: 'fr', name: 'French', native: 'Français' },
@@ -26,7 +32,7 @@ interface LanguageSelectorProps {
   onValueChange: (value: string) => void
 }
 
-export function LanguageSelector({ value, onValueChange }: LanguageSelectorProps) {
+const LanguageSelector = ({ value, onValueChange }: LanguageSelectorProps) => {
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className="w-[180px]">
@@ -42,3 +48,5 @@ export function LanguageSelector({ value, onValueChange }: LanguageSelectorProps
     </Select>
   )
 }
+
+export default LanguageSelector
