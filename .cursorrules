@@ -3,5 +3,10 @@ tech stack:
 - tailwindcss
 - typescript
 - shadcn/ui
+- mongodb
 
 use app router
+
+use shadcn components
+
+mongodb is located in lib/db.ts, use connectDB to connect
