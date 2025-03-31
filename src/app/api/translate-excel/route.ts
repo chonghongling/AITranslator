@@ -6,10 +6,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-interface ExcelRow {
-  [key: string]: string | number | boolean | null
-}
-
 export async function POST(req: Request) {
   try {
     const formData = await req.formData()
