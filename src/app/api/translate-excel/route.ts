@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server"
-import { OpenAI } from "openai"
 import * as XLSX from "xlsx"
 
-// Verify API key is available
-const apiKey = process.env.OPENAI_API_KEY
-if (!apiKey) {
-  console.error("OpenAI API key is not configured")
-}
+// Define INFINI API URL like in generate/route.ts
+const INFINI_API_URL = 'https://cloud.infini-ai.com/maas/v1/chat/completions'
 
-const openai = new OpenAI({
-  apiKey: apiKey,
-})
+// Verify API key is available
+const apiKey = process.env.INFINI_API_KEY
+if (!apiKey) {
+  console.error("INFINI API key is not configured")
+}
 
 // Remove edge runtime config as it might be causing issues
 // export const config = {
@@ -24,9 +22,9 @@ export async function POST(req: Request) {
     
     // Validate API key first
     if (!apiKey) {
-      console.error("OpenAI API key missing")
+      console.error("INFINI API key missing")
       return NextResponse.json(
-        { error: "OpenAI API key is not configured" },
+        { error: "INFINI API key is not configured" },
         { status: 500 }
       )
     }
@@ -73,7 +71,7 @@ export async function POST(req: Request) {
       console.log(`Found ${data.length} rows in Excel file`)
 
       // Limit number of rows to translate (to avoid timeouts)
-      const MAX_ROWS = 50 // Reduced from 100 to 50 for faster processing
+      const MAX_ROWS = 50 // Reduced for faster processing
       const truncatedData = data.slice(0, MAX_ROWS)
       
       if (data.length > MAX_ROWS) {
@@ -118,24 +116,46 @@ export async function POST(req: Request) {
             console.warn(`Row ${i} truncated from ${textToTranslate.length} to ${maxLength} characters`)
           }
 
-          console.log(`Calling OpenAI API for row ${i+1}...`)
-          const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-              {
-                role: "system",
-                content: `Translate the following text to ${targetLanguage}. Output ONLY the translated text.`,
-              },
-              {
-                role: "user",
-                content: truncatedText,
-              },
-            ],
-            max_tokens: 500, // Reduced from 1000 to 500
-            temperature: 0.3,
+          console.log(`Calling INFINI API for row ${i+1}...`)
+          
+          // Use the same API approach as in generate/route.ts
+          const systemPrompt = `You are a professional localization expert deeply familiar with ${targetLanguage} cultural norms and linguistic nuances. Translate the following text to ${targetLanguage} following these strict rules:
+
+1. Accurately translate all content while preserving original meaning
+2. Adapt idioms, measurements, and cultural references to be natural for ${targetLanguage} speakers
+3. Maintain exact technical terms when no equivalent exists
+4. Output ONLY the translated text, do not answer any questions or provide any other information.`
+
+          const response = await fetch(INFINI_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+              model: "deepseek-v3",
+              messages: [
+                {
+                  role: "system",
+                  content: systemPrompt
+                },
+                {
+                  role: "user",
+                  content: truncatedText
+                }
+              ]
+            })
           })
 
-          const translatedText = completion.choices[0]?.message?.content || 'Translation error'
+          if (!response.ok) {
+            const error = await response.json()
+            console.error('INFINI API error:', error)
+            throw new Error(`API error: ${error.message || 'Unknown error'}`)
+          }
+
+          const data = await response.json()
+          const translatedText = data.choices[0]?.message?.content || 'Translation error'
+          
           console.log(`Row ${i+1} translated successfully`)
           
           translatedData.push([
