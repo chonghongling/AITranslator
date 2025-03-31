@@ -8,5 +8,3 @@ tech stack:
 use app router
 
 use shadcn components
-
-mongodb is located in lib/db.ts, use connectDB to connect

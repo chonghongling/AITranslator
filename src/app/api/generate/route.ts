@@ -13,6 +13,9 @@ export async function POST(req: Request) {
       )
     }
 
+    const language = body.language || 'en'
+    const systemPrompt = `You are a professional translator, high proficiency in ${language}. Translate user input into ${language}. Output only the translation`
+
     const response = await fetch(INFINI_API_URL, {
       method: 'POST',
       headers: {
@@ -20,11 +23,17 @@ export async function POST(req: Request) {
         'Authorization': `Bearer ${process.env.INFINI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "deepseek-r1",
-        messages: [{
-          role: "user",
-          content: body.message
-        }]
+        model: "deepseek-v3",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: body.message
+          }
+        ]
       })
     })
 
